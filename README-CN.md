@@ -14,7 +14,9 @@ define, one, open, sadsafas, ;, '', 1, ...
 ```
 符号是不被空格等不可见符号分隔的单个单词
 
-符号为`\S.*`所匹配(虽然不被限制, 但请尽量不要使用双下划线开头的符号)
+符号为`\S.*`所匹配(虽然不被限制, 但请尽量不要使用双下划线开头的符号),
+
+特别的, 行尾的换行符也是一个符号, 并且不可修改不可声明不可使用
 
 - 字符串
 
@@ -81,7 +83,20 @@ string b = "text"; //使用字符串字面量
 
 ## 内置符号
 
-大部分内置符号都可以在标准库std中找到对应的无__build_in前缀版本
+未特殊说明的内置符号都可以在标准库std中找到对应的无__build_in前缀版本
+
+<a id="__build_in_line_annotation"></a>
+<a id="__build_in_start_annotation"></a>
+<a id="__build_in_end_annotation"></a>
+- 操作符 `行注释` __build_in_line_annotation , std中定义为双斜线`//`
+- 操作符 `开始注释域` __build_in_start_annotation , std中定义为`/*`
+- 操作符 `结束注释域` __build_in_end_annotation , std中定义为`*/`
+
+使用方法:
+```cpp
+// 行注释后直到行尾都视为注释
+/* 注释域中所有内容都视为注释 */
+```
 
 <a id="__build_in_throw"></a>
 <a id="__build_in_error"></a>
@@ -104,14 +119,55 @@ throw error(error_id, error_message)
 define symbol
 undefine symbol
 ```
-声明一个已声明的符号或取消声明一个未声明的符号都会抛出错误
+声明一个已声明的符号或取消声明一个未声明的符号都会抛出一个错误
+
+<a id="__build_in_end_sentence">
+- 操作符 `结束语句` __build_in_end_sentence , std中定义为分号
 
 <a id="__build_in_start_region"></a>
 <a id="__build_in_end_region"></a>
-- 操作符 `开始域` __bulid_in_start_region , std中定义为左大括号{
-- 操作符 `结束域` __build_in_end_region , std中定义为右大括号}
+<a id="__build_in_namespace"></a>
+- 操作符 `开始域` __bulid_in_start_region , std中定义为左大括号`{`
+- 操作符 `结束域` __build_in_end_region , std中定义为右大括号`}`
+- 操作符 `命名空间命名` __build_in_namespace
+
+namespace的使用方法:
+```cpp
+namespace name
+```
+namespace操作符所构成的语句将作用于随后的第一个符号
 
 开始域与结束域必须配套使用
+```cpp
+// 命名一个域
+namespace name
+{
+
+}
+// 一个匿名的域
+{
+
+}
+```
+可以使用`::`(__build_in_root_namespace)从根命名空间按绝对路径取出域, 
+否则将以当前命名空间为根域, 使用`.`(__build_in_member_touch)从域中取出成员
+```cpp
+namespace a
+{
+    b; //错误, 此时命名空间::a.b还没有被声明
+    std; //在此处的std是标准库, 即::std
+    namespace b
+    {
+
+    }
+    namespace std
+    {
+
+    }
+    std; //在此处的std是a下的命名空间, 即::a.std
+}
+a.b; //
+```
 
 <a id="__build_in_if"></a>
 - __build_in_if
