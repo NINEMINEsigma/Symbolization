@@ -37,7 +37,7 @@ define, one, open, sadsafas, ;, '', 1, ...
 
 数值可以表示绝对值最大为2^65-1, 最小精度为1/(2^65-1)的有理数
 
-使用两个数值和分号也可以产生一个数值字面量, 
+使用两个数值和分号也可以产生一个数值字面量,
 使用数字字面量的生成模式为`\d+?/\d+?`
 ```cpp
 1/1
@@ -98,6 +98,23 @@ string b = "text"; //使用字符串字面量
 /* 注释域中所有内容都视为注释 */
 ```
 
+<a id="__build_in_end_sentence"></a>
+- 操作符 `结束语句` __build_in_end_sentence , std中定义为分号`;`
+
+```cpp
+; //单个分号所组成的空语句是合法的
+```
+
+<a id="__build_in_start_expression"></a>
+<a id="__build_in_end_expression"></a>
+- 操作符 `开始局部表达式` __build_in_start_expression , std中定义为`(`
+- 操作符 `结束局部表达式` __build_in_end_expression , std中定义为`)`
+
+使用方法:
+```cpp
+expression = (expression);
+```
+
 <a id="__build_in_throw"></a>
 <a id="__build_in_error"></a>
 - 操作符 `抛出错误` __build_in_throw
@@ -111,18 +128,16 @@ throw error(error_id, error_message)
 
 <a id="__build_in_define"></a>
 <a id="__build_in_undefine"></a>
-- 操作符 `声明` __build_in_define
-- 操作符 `取消声明` __build_in_undefine
+- 操作符 `声明/定义` __build_in_define
+- 操作符 `取消声明/定义` __build_in_undefine
 
 使用方法:
 ```cpp
-define symbol
-undefine symbol
+define symbol; //声明一个符号已被使用
+define symbol other-symbol; //定义一个符号为另一个符号的别名
+undefine symbol; //取消一个符号的声明/定义
 ```
 声明一个已声明的符号或取消声明一个未声明的符号都会抛出一个错误
-
-<a id="__build_in_end_sentence">
-- 操作符 `结束语句` __build_in_end_sentence , std中定义为分号
 
 <a id="__build_in_start_region"></a>
 <a id="__build_in_end_region"></a>
@@ -149,7 +164,7 @@ namespace name
 
 }
 ```
-可以使用`::`(__build_in_root_namespace)从根命名空间按绝对路径取出域, 
+可以使用`::`(__build_in_root_namespace)从根命名空间按绝对路径取出域,
 否则将以当前命名空间为根域, 使用`.`(__build_in_member_touch)从域中取出成员
 ```cpp
 namespace a
@@ -168,6 +183,11 @@ namespace a
 }
 a.b; //
 ```
+
+<a id="__build_in_try"></a>
+<a id="__build_in_catch"></a>
+- 操作符 `尝试` __build_in_try
+- 操作符 `捕获` __build_in_catch
 
 <a id="__build_in_if"></a>
 - __build_in_if

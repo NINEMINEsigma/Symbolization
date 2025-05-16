@@ -46,6 +46,8 @@ endif()
 
 include_directories(./include)
 
+find_package(Convention::Shared REQUIRED)
+
 aux_source_directory(./src SRC_FILES)
 add_executable(Symbolization ${SRC_FILES})
 
