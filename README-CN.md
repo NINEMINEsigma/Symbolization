@@ -1,39 +1,82 @@
 # Symbolization
 ---
 
-这是一门基于c++编写的语言, 用于实现一些神奇的所见即所得的特性,
+自符号化语言标准,本仓库中根据此标准创建实现`Symbolization`,
+用于实现一些神奇的所见即所得的特性,
 其由解释器按行解释
 
-# EBNF文法描述
+# EBNF文法
 
-ordinary_symbol = < IDENTIFIER`[A-Za-z]\w*` >
-keyword_symbol = < KEY`single char` >
+OrdinarySymbol  是标识符,
+KeywordSymbol   是关键字
+
+```
+Symbol      = OrdinarySymbol 
+              | KeywordSymbol .
+
+String      = """ <string content> """ .
+
+Morpheme    = Symbol 
+              | String .
+
+Target      = OrdinarySymbol 
+              | String .
+
+Invocation  = { "." OrdinarySymbol } .
+
+Term        = Target [ Invocation ] .
+
+Parameters  = "(" { Term { [ "," Term ] } } ")" .
+
+DefineParameters    = "(" 
+                      { Term Term { [ "," Term Term ] } } 
+                      ")" .
+
+Subject     = Term .
+
+Predicate   = Term
+              | KeywordSymbol .
+
+Object      = Term 
+              | Parameter .
+
+Phrase      = Subject [ Predicate Object ]
+              | Predicate [ Subject ] .
+
+Expression  = [ "(" ] Phrase [ ")" ] .
+
+RightHand   = "=" Expression .
+
+Assignment  = Expression { RightHand } .
+
+DefineVariable  = Term OrdinarySymbol "=" Expression .
+
+Return      = "return" Expression .
+
+Production  = ( Assignment
+                | DefineVariable 
+                | Return ) , ";" .
+
+Function    = function OrdinarySymbol DefineParameters
+              "{"
+                  { Production }
+              "}" .
+
+Structure   = struct OrdinarySymbol
+              "{"
+                  { DefineVariable ";" }
+              "}" .
+
+Content     = Function
+              | Structure .
+
+Namespace   = namespace { Term } 
+              "{"
+                  Content 
+              "}".
+```
 
 # 标准
-
-## 定义
-
-只存在两种最基础的语素, 一种是符号, 一种是字符串字面量
-
-- 符号
-
-```text
-define, one, open, sadsafas, ;, '', 1, ...
-```
-符号由不被空格等不可见符号与保留符号分隔的单个单词与保留符号所组成
-
-前者为`[A-Za-z]\w*`所匹配(虽然不被限制, 但请尽量不要使用双下划线开头的符号),
-
-后者将在随后解释
-
-- 字符串
-
-```text
-"define", "one", "open", "asd asda s", ";", "\"", "1", ...
-```
-字符串的字面量如c的字符串一样, 某些字符需要使用转义字符表达
-
-字符串字面量为`"[^"]*"`所匹配
 
 ## 类型
 
