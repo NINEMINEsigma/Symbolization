@@ -7,37 +7,35 @@
 
 # EBNF文法
 
-OrdinarySymbol  是标识符,
-KeywordSymbol   是关键字
-
 ```
-Symbol      = OrdinarySymbol 
-              | KeywordSymbol .
-
 String      = """ <string content> """ .
 
-Morpheme    = Symbol 
+Target      = IDENTIFIER 
               | String .
 
-Target      = OrdinarySymbol 
-              | String .
+Invocation  = { "." IDENTIFIER } .
 
-Invocation  = { "." OrdinarySymbol } .
+Member      = Target [ Invocation ] .
 
-Term        = Target [ Invocation ] .
+Type        = < build in type >
+              | Member .
 
-Parameters  = "(" { Term { [ "," Term ] } } ")" .
+Parameters  = "(" { 
+              IDENTIFIER { [ "," IDENTIFIER ] } 
+              } ")" .
 
-DefineParameters    = "(" 
-                      { Term Term { [ "," Term Term ] } } 
-                      ")" .
+DefineParameters    = "(" {
+                      Type IDENTIFIER 
+                      { [ "," Type IDENTIFIER ] } 
+                      } ")" .
 
-Subject     = Term .
+Subject     = Member .
 
-Predicate   = Term
-              | KeywordSymbol .
+Predicate   = Member 
+              | < keywoard > .
+              | < build in function > .
 
-Object      = Term 
+Object      = Member
               | Parameter .
 
 Phrase      = Subject [ Predicate Object ]
@@ -49,7 +47,7 @@ RightHand   = "=" Expression .
 
 Assignment  = Expression { RightHand } .
 
-DefineVariable  = Term OrdinarySymbol "=" Expression .
+DefineVariable  = Term OrdinarySymbol RightHand .
 
 Return      = "return" Expression .
 
@@ -57,12 +55,12 @@ Production  = ( Assignment
                 | DefineVariable 
                 | Return ) , ";" .
 
-Function    = function OrdinarySymbol DefineParameters
+Function    = "function" OrdinarySymbol DefineParameters
               "{"
                   { Production }
               "}" .
 
-Structure   = struct OrdinarySymbol
+Structure   = "struct" OrdinarySymbol
               "{"
                   { DefineVariable ";" }
               "}" .
@@ -70,7 +68,7 @@ Structure   = struct OrdinarySymbol
 Content     = Function
               | Structure .
 
-Namespace   = namespace { Term } 
+Namespace   = "namespace" { Term } 
               "{"
                   Content 
               "}".
