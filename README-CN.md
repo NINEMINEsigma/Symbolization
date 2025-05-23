@@ -5,74 +5,97 @@
 用于实现一些神奇的所见即所得的特性,
 其由解释器按行解释
 
-# EBNF文法
+# EBNF文法描述
+
+IDENTIFIER 是标识符, STRING 是字符串字面量, NUMBER 是数值字面量
 
 ```
-String      = """ <string content> """ .
+Program     = { Namespace } .
 
-Target      = IDENTIFIER 
-              | String .
-
-Invocation  = { "." IDENTIFIER } .
-
-Member      = Target [ Invocation ] .
-
-Type        = < build in type >
-              | Member .
-
-Parameters  = "(" { 
-              IDENTIFIER { [ "," IDENTIFIER ] } 
-              } ")" .
-
-DefineParameters    = "(" {
-                      Type IDENTIFIER 
-                      { [ "," Type IDENTIFIER ] } 
-                      } ")" .
-
-Subject     = Member .
-
-Predicate   = Member 
-              | < keywoard > .
-              | < build in function > .
-
-Object      = Member
-              | Parameter .
-
-Phrase      = Subject [ Predicate Object ]
-              | Predicate [ Subject ] .
-
-Expression  = [ "(" ] Phrase [ ")" ] .
-
-RightHand   = "=" Expression .
-
-Assignment  = Expression { RightHand } .
-
-DefineVariable  = Term OrdinarySymbol RightHand .
-
-Return      = "return" Expression .
-
-Production  = ( Assignment
-                | DefineVariable 
-                | Return ) , ";" .
-
-Function    = "function" OrdinarySymbol DefineParameters
+Namespace   = "namespace" IDENTIFIER
               "{"
-                  { Production }
+                    [ { Requirement } ]
+                    [ { Content } ]
               "}" .
 
-Structure   = "struct" OrdinarySymbol
-              "{"
-                  { DefineVariable ";" }
-              "}" .
+Requirement = "require" IDENTIFIER 
+              [ "from" STRING ] ";" .
 
 Content     = Function
               | Structure .
 
-Namespace   = "namespace" { Term } 
+Function    = "function" IDENTIFIER DefineParameters
               "{"
-                  Content 
+                    [ { Production ";" } ]
               "}".
+
+Structure   = "struct" IDENTIFIER 
+              [ "inherit" { IDENTIFIER } ]
+              "{"
+                    { DefineVariable ";" }
+              "}" .
+
+DefineParameters    = "(" {
+                      Term IDENTIFIER 
+                      { [ "," Term IDENTIFIER ] } 
+                      } ")" .
+              
+DefineVariable      = Term IDENTIFIER RightHand .
+
+Term        = ( IDENTIFIER { "." IDENTIFIER } ) 
+              | < build-in type > .
+              
+Production  = Assignment
+              | DefineVariable 
+              | Return 
+              | Expression 
+              | Block .
+
+Assignment  = IDENTIFIER { RightHand } .
+
+Return      = "return" Expression .
+
+Expression  = [ "(" ] Phrase [ ")" ] .
+
+Block       = ( IDENTIFIER 
+                | < keyword > ) 
+              "(" [ Expression ] 
+                [ ";" { Expression } ] ")"
+              "{" 
+                    [ { Production } ] 
+              "}" .
+
+RightHand   = "=" Expression .
+
+Phrase      = Subject [ Predicate Object ]
+              | Predicate [ Subject ] .
+
+Subject     = Term .
+
+Predicate   = Term 
+              | < keyword > .
+              | < build in function > .
+
+Object      = Term
+              | Parameters .
+
+Parameters  = "(" 
+              IDENTIFIER 
+              { [ "," IDENTIFIER ] } 
+              ")" .
 ```
+
+- `IDENTIFIER`标识符
+
+不与关键字重复的模式`^[a-zA-Z_][a-zA-Z0-9_]*$`
+
+- `STRING` 字符串字面量
+
+模式`^"([^"\\]|\\.)*"$`
+
+- `NUMBER` 数值字面量
+
+模式`^[+-]?(0|[1-9][0-9]*)\.([0-9]*)?$`
 
 # 标准
 
