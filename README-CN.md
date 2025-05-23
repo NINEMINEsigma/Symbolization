@@ -70,18 +70,20 @@ RightHand   = "=" Expression .
 Phrase      = Subject [ Predicate Object ]
               | Predicate [ Subject ] .
 
-Subject     = Term .
+Subject     = Term 
+              | STRING 
+              | NUMBER .
 
 Predicate   = Term 
               | < keyword > .
               | < build in function > .
 
-Object      = Term
+Object      = Subject
               | Parameters .
 
 Parameters  = "(" 
-              IDENTIFIER 
-              { [ "," IDENTIFIER ] } 
+              Subject 
+              { [ "," Subject ] } 
               ")" .
 ```
 
