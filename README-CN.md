@@ -49,8 +49,13 @@ Visibility  = "private"
               | "internal"
               | "protected"
               | "public" .
+
+Survival    = "static"
+              | "global"
+              | "local" .
               
-DefineVariable      = Term IDENTIFIER RightHand .
+DefineVariable      = [ Survival ] Term 
+                      IDENTIFIER RightHand .
 
 Term        = ( IDENTIFIER { "." IDENTIFIER } ) 
               | < build-in type > .
@@ -185,7 +190,27 @@ namespace Graphics
 
 - `void` 空类型
 
-指示函数不返回值
+仅用于指示函数不返回值
+
+### Survival生存域
+
+变量是对象在代码中的指示器, 
+当所有指向对象的变量都被销毁时对象才被销毁
+
+- `static` 静态
+
+静态生存的变量不会在离开当前域时被销毁,
+仅在初次到达变量定义时赋值
+
+- `global` 全局
+
+全局生存的变量不会在离开当前域时被销毁,
+仅在程序启动时赋值
+
+- `local` 局部(默认)
+
+局部生存的变量在离开当前域时被销毁,
+在每次到达变量定义时赋值
 
 ### struct结构
 
@@ -209,4 +234,11 @@ namespace Graphics
 
 在本命名空间内的本结构函数都可以获得与操作该字段
 
+## 函数
+
+### 函数的定义
+
+使用关键字`function`定义函数,
+使用一个标识符作为函数名词,
+后跟函数形参列表与函数返回值类型
 
