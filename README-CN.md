@@ -55,7 +55,7 @@ Survival    = "static"
               | "local" .
               
 DefineVariable      = [ Survival ] Term 
-                      IDENTIFIER RightHand .
+                      IDENTIFIER [ RightHand ].
 
 Term        = ( IDENTIFIER { "." IDENTIFIER } ) 
               | < build-in type > .
@@ -180,21 +180,45 @@ namespace Graphics
 
 - `intptr` 指针类型
 
-在32/64位平台上分别使用int32/int64作为真实类型,
+真实类型是整数类型,
 使用address获取对象的地址
 
 - `symbol` 符号类型
 
-符号类型不可声明不可定义, 
-未定义的标识符即为符号类型, 值为其标识符自身
+符号类型的对象不可定义
 
 - `void` 空类型
 
 仅用于指示函数不返回值
 
-### 模板类型
+### 动态绑定类型
 
-### Survival生存域
+使用未声明的符号作为`Type`语素,
+在词义分析中将作为动态绑定类型,
+可以在函数形参和声明/定义变量时使用
+
+动态绑定类型将在首次赋值时被确定
+
+```
+Type t1, t2;
+{
+      //index的类型是var, var符号的值是int32
+      var index = 1;
+      t1 = Type(var);
+}
+{
+      //str的类型是var, var符号的值尚未确定
+      var str;
+      //var符号的值在初次赋值中确定为对象的类型
+      str = "string";
+      t2 = Type(var);
+}
+assert(t1!=t2);
+```
+
+## 变量
+
+### 生存域
 
 变量是对象在代码中的指示器, 
 当所有指向对象的变量都被销毁时对象才被销毁
@@ -214,11 +238,7 @@ namespace Graphics
 局部生存的变量在离开当前域时被销毁,
 在每次到达变量定义时赋值
 
-### struct结构
-
-结构仅作为数据的对象, 内部仅能够定义变量字段
-
-#### 可见性
+### 可见性
 
 - `public` 完全公开
 
@@ -235,6 +255,21 @@ namespace Graphics
 - `private` 完全私有
 
 在本命名空间内的本结构函数都可以获得与操作该字段
+
+## 结构
+
+结构仅作为数据的对象, 
+内部仅能够定义变量字段,
+字段的定义顺序与其字段在内存模型中的顺序相同
+
+如结构
+```cpp
+struct Base
+{
+      int32 a = 0;
+      
+}
+```
 
 ## 函数
 
