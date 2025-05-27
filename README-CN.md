@@ -7,9 +7,9 @@
 
 # EBNF文法描述
 
-IDENTIFIER 是标识符, 
-STRING 是以双引号包括的字符串字面量, 
-NUMBER 是数值字面量, 
+IDENTIFIER 是标识符,
+STRING 是以双引号包括的字符串字面量,
+NUMBER 是数值字面量,
 CHAR 是以单引号包括的单字符字面量
 
 ```
@@ -21,7 +21,7 @@ Namespace   = "namespace" IDENTIFIER
                     [ { Content } ]
               "}" .
 
-Requirement = "require" IDENTIFIER 
+Requirement = "require" IDENTIFIER
               [ "from" STRING ] ";" .
 
 Content     = Function
@@ -33,7 +33,7 @@ Function    = "function" IDENTIFIER DefineParameters
                     [ { Production ";" } ]
               "}".
 
-Structure   = "struct" IDENTIFIER 
+Structure   = "struct" IDENTIFIER
               [ "inherit" { IDENTIFIER } ]
               "{"
                     { [ Visibility ]
@@ -41,8 +41,8 @@ Structure   = "struct" IDENTIFIER
               "}" .
 
 DefineParameters    = "(" {
-                      Term IDENTIFIER 
-                      { [ "," Term IDENTIFIER ] } 
+                      Term IDENTIFIER
+                      { [ "," Term IDENTIFIER ] }
                       } ")" .
 
 Visibility  = "private"
@@ -53,17 +53,17 @@ Visibility  = "private"
 Survival    = "static"
               | "global"
               | "local" .
-              
-DefineVariable      = [ Survival ] Term 
+
+DefineVariable      = [ Survival ] Term
                       IDENTIFIER [ RightHand ].
 
-Term        = ( IDENTIFIER { "." IDENTIFIER } ) 
+Term        = ( IDENTIFIER { "." IDENTIFIER } )
               | < build-in type > .
-              
+
 Production  = Assignment
-              | DefineVariable 
-              | Return 
-              | Expression 
+              | DefineVariable
+              | Return
+              | Expression
               | Block .
 
 Assignment  = IDENTIFIER { RightHand } .
@@ -72,12 +72,12 @@ Return      = "return" Expression .
 
 Expression  = [ "(" ] Phrase [ ")" ] .
 
-Block       = ( IDENTIFIER 
-                | < keyword > ) 
-              "(" [ Expression ] 
+Block       = ( IDENTIFIER
+                | < keyword > )
+              "(" [ Expression ]
                 [ ";" { Expression } ] ")"
-              "{" 
-                    [ { Production } ] 
+              "{"
+                    [ { Production } ]
               "}" .
 
 RightHand   = "=" Expression .
@@ -85,12 +85,12 @@ RightHand   = "=" Expression .
 Phrase      = Subject [ Predicate Object ]
               | Predicate [ Object ] .
 
-Subject     = Term 
-              | STRING 
-              | NUMBER 
+Subject     = Term
+              | STRING
+              | NUMBER
               | CHAR .
 
-Predicate   = Term 
+Predicate   = Term
               | < keyword > .
               | < build in function > .
 
@@ -98,9 +98,9 @@ Object      = Subject
               | Parameters .
 
 Parameters  = "("
-              ( Subject 
+              ( Subject
                 | "default" )
-              { [ "," ( Subject 
+              { [ "," ( Subject
                         | "default" ) ] }
               ")" .
 
@@ -127,7 +127,7 @@ Annotation  = ( "//" < single line annotation > )
 # 例子
 
 ```
-namespace Graphics 
+namespace Graphics
 {
       //导入标准库, 使得本命名空间可以使用标准库中的内容
       require std;
@@ -159,6 +159,27 @@ namespace Graphics
 ```
 
 # 标准
+
+## 关键字
+
+关键字包括`类型`和以下内容
+
+- 声明
+`function` 函数定义声明
+`struct` 结构定义声明
+
+- 逻辑
+`if` `else` `elif` 判断
+`goto` 跳转
+
+- 类函数
+`address` 取地址, 接收一个任意类型对象返回一个指针
+`typeof` 取类型, 接收一个任意类型对象返回一个符号
+`typeid` 取类型, 接收一个任意类型对象返回一个整数
+
+- 特定符号
+`(` `)` `{` `}` `[` `]` 这些符号的全部形式均不可自定义
+`*` `~` `=` 这些符号的部分形式不可自定义
 
 ## 类型
 
@@ -197,7 +218,8 @@ namespace Graphics
 在词义分析中将作为动态绑定类型,
 可以在函数形参和声明/定义变量时使用
 
-动态绑定类型将在首次赋值时被确定
+变量声明中的动态绑定类型将在首次赋值时被确定,
+函数形参的动态绑定类型在每次赋予实参时被更新
 
 ```
 Type t1, t2;
@@ -220,7 +242,7 @@ assert(t1!=t2);
 
 ### 生存域
 
-变量是对象在代码中的指示器, 
+变量是对象在代码中的指示器,
 当所有指向对象的变量都被销毁时对象才被销毁
 
 - `static` 静态
@@ -258,7 +280,7 @@ assert(t1!=t2);
 
 ## 结构
 
-结构仅作为数据的对象, 
+结构仅作为数据的对象,
 内部仅能够定义变量字段,
 字段的定义顺序与其字段在内存模型中的顺序相同
 
@@ -266,9 +288,56 @@ assert(t1!=t2);
 ```cpp
 struct Base
 {
-      int32 a = 0;
-      
+    int32 a = 0;
+    int32 b = 0;
 }
+```
+其内存布局即为
+```text
+-----------------------------------------------------
+| header... | 32 bit for a | 32 bit for b | tail... |
+-----------------------------------------------------
+```
+
+与结构名同名且返回值为该结构的函数为结构的构造函数,
+在找不到构造函数时将使用默认构造函数,
+默认构造函数使用结构中的字段依次作为形参,
+默认构造函数仅在具有与默认构造函数相同形参的构造函数具有定义时被覆盖
+```
+function Base() -> Base
+{
+    return Base(0, 0);
+}
+function Base(int32 a) -> Base
+{
+    return Base(a, 0);
+}
+```
+
+在**结构名前加~ 且 返回值为void 且 形参数量为0**的函数
+为该结构的析构函数,
+在找不到析构函数时使用默认析构函数,
+无论是否定义了析构函数, 默认析构函数都会在释放内存前被调用
+```
+function ~Base() -> void
+{
+
+}
+```
+
+此时Base类在c++中的表示如下
+```cpp
+struct Base
+{
+    //字段定义
+    int32_t a, b;
+    //默认构造函数
+    Base(int32_t a, int32_t b): a(a), b(b) {}
+    //分别对应上述两条函数
+    Base(): Base(0, 0) {}
+    Base(int32_t a): Base(a, 0) {}
+    ~Base(){}
+};
 ```
 
 ## 函数
@@ -284,4 +353,56 @@ struct Base
 function FunctionName(...) -> Type { ... }
 ```
 
-### 从属于类型的
+### 从属于类型的函数
+
+函数从属于首个形参的类型(如果存在的话),
+例如
+```
+function +(Vector2 a, Vector2 b) -> Vector2
+{
+    return Vector2(a.x+b.x, a.y+b.y);
+}
+```
+可以通过以下两种形式调用
+```
+Vector2 c = a + b;//操作符形式调用
+Vector2 d = +(a, b);//普通函数形式调用
+```
+
+这提供了更加自然的代码环境
+```
+an instance can call by foo;
+```
+通过这些内容, 这条语句将是合法的,
+并且instance将会作为实参传递给函数foo进行调用
+```
+function an(Any right) -> Any
+{
+    return right;
+}
+function can(Any self) -> Any
+{
+    return right;
+}
+function call(Any self, callType how_call, functional func) -> Ret
+{
+    //等同于
+    //return how_call(self, func);
+    return self how_call func;
+}
+function by(Any self, functional func)
+{
+    //等同于
+    //return func self;
+    //也等同于
+    //return self func
+    return func(self);
+}
+function foo(instanceType instance) -> instanceType
+{
+    //any work
+    return instance;
+}
+```
+
+
