@@ -180,6 +180,9 @@ namespace Graphics
 `if` `else` `elif` 判断
 `goto` 跳转
 `while` `for` `foreach` 循环
+    - while(conditions){}
+    - for(init;conditions;transfer)
+    - foreach(type var-name:enumerate)
 
 - 类函数
 `address` 取地址, 接收一个任意类型对象返回一个指针
